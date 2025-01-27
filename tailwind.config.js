@@ -20,7 +20,15 @@ export default {
       },
       opacity: {
         2: 0.02
-      }
+      },
+      animation: {
+        border: 'border 2s linear infinite'
+      },
+      keyframes: {
+        border: {
+          to: { '--border-angle': '360deg' }
+        }
+      },
     },
   },
   plugins: [],
