@@ -19,7 +19,7 @@ export function UploadWidgetUploadList() {
         ) : (
           <>
             { Array.from(uploads.entries()).map(([uploadId, upload]) => {
-              return <UploadWidgetUploadItem key={uploadId} upload={upload} />
+              return <UploadWidgetUploadItem key={uploadId} upload={upload} uploadId={uploadId} />
             })}
           </>
         )}
