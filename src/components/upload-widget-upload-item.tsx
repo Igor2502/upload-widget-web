@@ -12,6 +12,9 @@ interface UploadWidgetUploadItemProps {
 
 export function UploadWidgetUploadItem({ upload, uploadId }: UploadWidgetUploadItemProps) {
   const cancelUpload = useUploads(store => store.cancelUpload)
+
+  const progress = Math.min(Math.round((upload.uploadSizeInBytes * 100) / upload.originalSizeInBytes), 100)
+
   return (
     <motion.div
       className="p-3 rounded-lg flex flex-col gap-3 shadow-shape-content bg-white/2 relative overflow-hidden"
@@ -47,8 +50,8 @@ export function UploadWidgetUploadItem({ upload, uploadId }: UploadWidgetUploadI
         className='group bg-zinc-400 rounded-full h-1 overflow-hidden'
       >
         <Progress.Indicator
-          className='bg-indigo-500 h-1 group-data-[status=success]:bg-green-400 group-data-[status=error]:bg-red-400 group-data-[status=canceled]:bg-yellow-400'
-          style={{ width:  upload.status === 'progress' ? '45%' : '100%' }}
+          className='bg-indigo-500 h-1 group-data-[status=success]:bg-green-400 group-data-[status=error]:bg-red-400 group-data-[status=canceled]:bg-yellow-400 transition-all'
+          style={{ width:  upload.status === 'progress' ? `${progress}%` : '100%' }}
         />
       </Progress.Root>
 

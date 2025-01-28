@@ -2,12 +2,15 @@ import { create } from "zustand";
 import { enableMapSet } from 'immer'
 import { immer } from 'zustand/middleware/immer'
 import { uploadFileToStorage } from "../http/upload-file-to-storage";
+import { CanceledError } from "axios";
 
 export type Upload = {
   name: string
-  file: File,
-  status: 'progress' | 'success' | 'error' | 'canceled',
+  file: File
+  status: 'progress' | 'success' | 'error' | 'canceled'
   abortController: AbortController
+  uploadSizeInBytes: number
+  originalSizeInBytes: number
 }
 
 type UploadState = {
@@ -27,7 +30,17 @@ export const useUploads = create<UploadState, [['zustand/immer', never]]>(immer(
 
     try {
       await uploadFileToStorage(
-        { file: upload.file },
+        {
+          file: upload.file,
+          onProgress(sizeInBytes) {
+            set(state => {
+              state.uploads.set(uploadId, {
+                ...upload,
+                uploadSizeInBytes: sizeInBytes
+              })
+            })
+          },
+        },
         { signal: upload.abortController.signal }
       )
   
@@ -37,7 +50,16 @@ export const useUploads = create<UploadState, [['zustand/immer', never]]>(immer(
           status: 'success'
         })
       })
-    } catch {
+    } catch (err) {
+      if (err instanceof CanceledError) {
+        set(state => {
+          state.uploads.set(uploadId, {
+            ...upload,
+            status: 'canceled'
+          })
+        })
+        return
+      }
       set(state => {
         state.uploads.set(uploadId, {
           ...upload,
@@ -56,7 +78,9 @@ export const useUploads = create<UploadState, [['zustand/immer', never]]>(immer(
         name: file.name,
         file,
         status: 'progress',
-        abortController
+        abortController,
+        originalSizeInBytes: file.size,
+        uploadSizeInBytes: 0
       }
 
       set(state => {
@@ -73,13 +97,6 @@ export const useUploads = create<UploadState, [['zustand/immer', never]]>(immer(
     if (!upload) return
 
     upload.abortController.abort()
-
-    set(state => {
-      state.uploads.set(uploadId, {
-        ...upload,
-        status: 'canceled'
-      })
-    })
   }
 
   return {
