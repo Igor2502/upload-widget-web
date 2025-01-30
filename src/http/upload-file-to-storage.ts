@@ -10,7 +10,7 @@ interface UploadFileToStorageOpts {
 }
 
 export async function uploadFileToStorage(
-  { file }: UploadFileToStorageParams,
+  { file, onProgress }: UploadFileToStorageParams,
   opts?: UploadFileToStorageOpts,
 ) {
   const data = new FormData()
